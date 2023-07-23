@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <title>Gaming Console Sales Visualization</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="progress-bar">
+        <a class="current-stage" onclick="redirect()">Overview</a>
+        <a class="pending-stage">Yearly Sales</a>
+        <a class="pending-stage">Quarterly Sales</a>
+    </div>
+    <div id="chart">
+        <h1>Gaming Console Sales Visualization</h1>
+        <input type="checkbox" class="filter-btn" id="2019" data-console="PS2/PS3" checked>PS2/PS3
+        <input type="checkbox" class="filter-btn" id="2020" data-console="PSP" checked>PSP
+        <input type="checkbox" class="filter-btn" id="2021" data-console="PS4" checked>PS4
+        <input type="checkbox" class="filter-btn" id="2022" data-console="PS5" checked>PS5
+
+    </div>
+    <div class="tooltip"></div>
+    <script>
+        let file = d3.csv(`https://raw.githubusercontent.com/TonyDeng1997/hdeng11.github.io/main/final_data.csv`)
+        let mainData = []
+        d3.csv("https://raw.githubusercontent.com/TonyDeng1997/hdeng11.github.io/main/final_data.csv").then(function (data) {
+            let sumPS2PS3 = 0;
+            let sumPSP = 0;
+            let sumPS4 = 0;
+            let sumPS5 = 0;
+            data.forEach(function (d) {
+                sumPS2PS3 += +d["PS2/PS3"] || 0; // '+' converts the value to a number, '|| 0' handles any missing data
+                sumPSP += +d["PSP"] || 0;
+                sumPS4 += +d["PS4"] || 0;
+                sumPS5 += +d["PS5"] || 0;
+            });
+
+            var data = []
+            data.push({ console: "PS2/PS3", sales: parseFloat(sumPS2PS3.toFixed(2)) })
+            data.push({ console: "PSP", sales: parseFloat(sumPSP.toFixed(2)) })
+            data.push({ console: "PS4", sales: parseFloat(sumPS4.toFixed(2)) })
+            data.push({ console: "PS5", sales: parseFloat(sumPS5.toFixed(2)) })
+            updateChart(data);
+            mainData = data;
+        }).catch(function (error) {
+            // Handle any errors that may occur during the loading process
+            console.error("Error loading CSV file:", error);
+        });
+
+
+
+        // Set up the dimensions for the chart
+        const width = 800;
+        const height = 500;
+        const margin = { top: 40, right: 20, bottom: 30, left: 50 };
+
+
+
+        // Create an SVG element to contain the chart
+        const svg = d3.select("#chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        // Function to update the chart based on the data
+        function updateChart(dataset) {
+            // Define color scale for the bars
+            const colorScale = d3.scaleOrdinal()
+                .domain(dataset.map(d => d.console))
+                .range(d3.schemeCategory10);
+
+            const xScale = d3.scaleBand()
+                .domain(dataset.map(d => d.console))
+                .range([0, width])
+                .padding(0.1);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(dataset, d => d.sales)])
+                .range([height, 0]);
+
+            // Update the axes
+            svg.select(".x-axis")
+                .attr("transform", `translate(0, ${height})`)
+                .call(d3.axisBottom(xScale));
+
+            svg.select(".y-axis")
+                .call(d3.axisLeft(yScale));
+
+            const bars = svg.selectAll(".bar")
+                .data(dataset, d => d.console);
+
+            // Enter
+            bars.enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => xScale(d.console))
+                .attr("y", height)
+                .attr("width", xScale.bandwidth())
+                .attr("height", 0)
+                .on("click", function (event, d) {
+                    // Show the message when a bar is clicked
+                    window.location.href = "./year.html?console=" + d.console
+                })
+                .attr("fill", d => colorScale(d.console))
+                .on("mouseover", handleMouseOver) // Add event listener for hover
+                .on("mouseout", handleMouseOut)   // Add event listener for mouseout
+                .merge(bars) // Enter + Update
+                .transition()
+                .duration(500)
+                .attr("x", d => xScale(d.console))
+                .attr("y", d => yScale(d.sales))
+                .attr("width", xScale.bandwidth())
+                .attr("height", d => height - yScale(d.sales))
+                .attr("fill", d => colorScale(d.console));
+
+            // Exit
+            bars.exit()
+                .transition()
+                .duration(500)
+                .attr("y", height)
+                .attr("height", 0)
+                .remove();
+
+            svg.selectAll(".annotation").remove();
+
+            const maxSales = d3.max(dataset, d => d.sales);
+            const maxSalesData = dataset.find(d => d.sales === maxSales);
+            const xPos = xScale(maxSalesData.console) + xScale.bandwidth() / 2;
+            const yPos = yScale(maxSalesData.sales);
+
+            // Add a line from the top of the bar to the annotation
+            svg.append("line")
+                .attr("class", "annotation")
+                .attr("x1", xPos)
+                .attr("y1", yPos)
+                .attr("x2", xPos)
+                .attr("y2", yPos - 10)
+                .attr("stroke", "black");
+
+
+
+
+            // Add the annotation text inside the circle
+            svg.append("text")
+                .attr("class", "annotation")
+                .attr("x", xPos + 30)
+                .attr("y", yPos - 20)
+                .style("text-anchor", "middle")
+                .style("alignment-baseline", "middle")
+                .text("This is the champion. Click on a bar to drill down ");
+        }
+
+        // Append axes and labels
+        svg.append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0, ${height})`);
+
+        svg.append("g")
+            .attr("class", "y-axis");
+
+        // Add x-axis label
+        svg.append("text")
+            .attr("class", "x-axis-label")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom)
+            .style("text-anchor", "middle")
+            .text("Console");
+
+        // Add y-axis label
+        svg.append("text")
+            .attr("class", "y-axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -height / 2)
+            .attr("y", -margin.left)
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Culmulative Sales (In Millions)");
+
+        // Initial chart rendering
+        //  updateChart(data);
+
+
+
+        // Function to update the chart when the button is pressed
+        function handleUpdateButtonClick() {
+            var attributesArray = []
+            const selectedConsoleItem = d3.selectAll(".filter-btn:checked");
+            selectedConsoleItem.each(function () {
+                const attribute = d3.select(this).attr("data-console");
+                attributesArray.push(attribute);
+            });
+            const filteredData = mainData.filter(d => attributesArray.includes(d.console));
+            updateChart(filteredData);
+        }
+
+        d3.selectAll(".filter-btn").on("click", handleUpdateButtonClick);
+
+        function handleMouseOver(event, d) {
+            // Get the current position of the mouse
+            const [x, y] = [event.pageX, event.pageY];
+            var test = d3.select(this).data()
+            // Show the tooltip with the sales value of the bar
+            d3.select(".tooltip")
+                .style("opacity", 1)
+                .style("left", `${x}px`)
+                .style("top", `${y}px`)
+                .text(`Sales: ${test[0].sales}m Hardwares`);
+        }
+
+        // Function to handle mouseout event on the bars
+        function handleMouseOut() {
+            // Hide the tooltip
+            d3.select(".tooltip").style("opacity", 0);
+        }
+    </script>
+</body>
+
+</html>

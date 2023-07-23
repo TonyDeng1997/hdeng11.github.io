@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>PSP Yearly Sales Line Chart</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script src="https://unpkg.com/d3-svg-annotation@2.0.0/d3-annotation.min.js"></script>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <div class="progress-bar">
+    <a class="current-stage" onclick="redirect()">Overview</a>
+    <a class="current-stage" onclick="redirect_second()">Yearly Sales</a>
+    <a class="current-stage">Quarterly Sales</a>
+  </div>
+  <div class="center">
+    <h1 id="my-heading">Gaming Console Sales Visualization Quarterly</h1>
+    <div style="text-align: center;">
+      <label for="startDate">Start Date:</label>
+      <input type="date" id="startDate">
+      <label for="endDate">End Date:</label>
+      <input type="date" id="endDate">
+      <button onclick="filterData()">Apply Filter</button>
+    </div>
+  </div>
+  <div id="chart">
+  </div>
+
+  <div id="tooltip"
+    style="position: absolute; display: none; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 8px; font-size: 14px;">
+  </div>
+
+  <script>
+    // The data you provided
+    function redirect() {
+      window.location.href = "./final.html"
+    }
+    function redirect_second() {
+      window.location.href = "./year.html?console=" + getURLParameter("console")
+    }
+
+    function getURLParameter(parameterName) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(parameterName);
+    }
+    function handleDotHover(event, d) {
+      const tooltip = d3.select("#tooltip");
+      tooltip.style("left", event.pageX + 10 + "px");
+      tooltip.style("top", event.pageY - 10 + "px");
+      tooltip.style("display", "inline-block");
+      const roundedSales = d.sales !== null ? d.sales.toFixed(2) : "N/A";
+      tooltip.text(`Year: ${d.year}, Sales: ${roundedSales} Millions`);
+    }
+
+    // Function to hide tooltip on mouseout
+    function handleDotMouseout() {
+      const tooltip = d3.select("#tooltip");
+      tooltip.style("display", "none");
+    }
+    var originalData = []
+    var currentConsole = getURLParameter("console")
+    var selectedYear = getURLParameter("year")
+    d3.csv("https://raw.githubusercontent.com/TonyDeng1997/hdeng11.github.io/main/final_data.csv").then(function (data) {
+
+
+
+      document.getElementById('startDate').value = selectedYear + '-01-01'
+      document.getElementById('endDate').value = selectedYear + '-12-31'
+      originalData = data
+      d3.select("#my-heading").text("Quarterly Hardware Sales for " + currentConsole + " at " + selectedYear)
+      const parseDate = d3.timeParse("Q%q '%y");
+
+
+      // Convert the array of [year, totalSales] to an array of objects with properties "year" and "totalSales"
+      const yearlySalesData = data.map(function (d) {
+        var date = parseDate(d.Date)
+
+        // var year = parseDate(d.Date).getMonth()+3+" " +parseDate(d.Date).getFullYear()
+        var year = date.getFullYear()
+        var sales = parseFloat(d[currentConsole] || 0)
+        if (year == selectedYear) {
+          return { year: d.Date, sales: sales }
+        }
+
+
+      });
+      const filteredData = yearlySalesData.filter(d => d != undefined && d.sales != 0);
+      console.log(filteredData)
+      // Now you can access the yearly sales data in the "yearlySalesData" array
+
+      drawLineChart(filteredData)
+
+    })
+    function filterData() {
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      d3.select("#my-heading").text("Quarterly Hardware Sales for " + currentConsole)
+      const parseDate = d3.timeParse("Q%q '%y");
+
+
+      // Convert the array of [year, totalSales] to an array of objects with properties "year" and "totalSales"
+      const yearlySalesData = originalData.map(function (d) {
+        var date = parseDate(d.Date)
+        var newDate = new Date(date.setMonth(date.getMonth()));
+
+        // var year = parseDate(d.Date).getMonth()+3+" " +parseDate(d.Date).getFullYear()
+        var year = date.getFullYear()
+        var sales = parseFloat(d[currentConsole] || 0)
+        if (newDate >= startDate && newDate <= endDate) {
+          return { year: d.Date, sales: sales }
+        }
+
+
+      });
+      const filteredData = yearlySalesData.filter(d => d != undefined && d.sales != 0);
+      console.log(filteredData)
+      // Now you can access the yearly sales data in the "yearlySalesData" array
+
+      drawLineChart(filteredData)
+
+
+
+    }
+
+
+    const margin = { top: 30, right: 30, bottom: 50, left: 60 };
+    const width = 1000;
+    const height = 500;
+    function drawLineChart(data) {
+      d3.select("#chart").selectAll("*").remove();
+      const svg = d3.select('#chart')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+      const xScale = d3.scaleBand()
+        .domain(data.map(d => d.year))
+        .range([0, width])
+        .padding(0.1);
+
+      const yScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.sales)])
+        .range([height, 0]);
+
+      const xAxis = d3.axisBottom(xScale);
+      const yAxis = d3.axisLeft(yScale);
+
+      svg
+        .append("text")
+        .attr("x", 50)
+        .attr("y", height - 50)
+        .style("font-size", "20px")
+        .style("fill", "green")
+        .text("Click on dot to drill in");
+
+      svg.append('g')
+        .attr('transform', `translate(0, ${height})`)
+        .call(xAxis);
+
+      svg.append('g')
+        .call(yAxis);
+
+      const line = d3.line()
+        .x(d => xScale(d.year) + xScale.bandwidth() / 2)
+        .y(d => yScale(d.sales));
+
+      svg.append('path')
+        .datum(data.filter(d => d.sales !== null))
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 2)
+        .attr('d', line);
+
+      // Add circles for each data point
+      svg.selectAll('.dot')
+        .data(data.filter(d => d.sales !== null))
+        .enter()
+        .append('circle')
+        .attr('class', 'dot')
+        .attr('cx', d => xScale(d.year) + xScale.bandwidth() / 2)
+        .attr('cy', d => yScale(d.sales))
+        .attr('r', 7)
+        .attr('fill', 'steelblue')
+        .on('mouseover', handleDotHover) // Show tooltip on mouseover
+        .on('mouseout', handleDotMouseout) // Hide tooltip on mouseout
+
+
+      // Add x-axis label
+      svg.append("text")
+        .attr("class", "x-axis-label")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom)
+        .style("text-anchor", "middle")
+        .text("Quarter");
+
+      // Add y-axis label
+      svg.append("text")
+        .attr("class", "y-axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -margin.left)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Hardware Sales (In Millions)");
+
+      const annotations = [
+        {
+          note: {
+            title: "Data Point",
+            label: "This is a data point.",
+          },
+          x: xScale(data[1].year) + xScale.bandwidth() / 2,
+          y: yScale(data[1].sales),
+          dx: 70,
+          dy: 40,
+          connector: { end: "arrow" },
+          type: d3.annotationCalloutElbow,
+          color: "blue",
+        },
+      ];
+
+      // Draw the annotations
+      const makeAnnotations = d3.annotation()
+        .annotations(annotations);
+
+      svg.append("g").attr("class", "annotation-group").call(makeAnnotations);
+    }
+
+    //drawLineChart()
+
+  </script>
+</body>
+
+</html>

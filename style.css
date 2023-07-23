@@ -1,0 +1,63 @@
+   /* CSS to center the chart container */
+#chart {
+width: 800px;
+height: 600px;
+
+margin-left: 30%;
+}
+.bar {
+
+    cursor: pointer; /* Cursor becomes a pointer on hover */
+}
+.center{
+    text-align: center;
+
+}
+#chart h1 {
+    text-align: center;
+}
+.filter-btn {
+    margin-right: 10px;
+}
+
+.selected {
+    background-color: #007bff;
+    color: #fff;
+}
+.tooltip {
+    position: absolute;
+    padding: 5px;
+    background-color: #333;
+    color: #fff;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+}
+.progress-bar {
+    width: 500px;
+    height: 40px;
+    position: relative;
+    margin-left: 45%;
+}
+.current-stage {
+    display: inline-block;
+    top: 0;
+    height: 100%;
+    width: 20%;
+    background-color: #2196F3;
+    cursor: pointer;
+    text-align: center;
+}
+.pending-stage {
+    display: inline-block;
+    top: 0;
+    height: 100%;
+    width: 20%;
+    background-color: gray;
+    cursor: pointer;
+    text-align: center;
+    cursor:not-allowed;
+}
+.dot {    
+    cursor: pointer; /* Cursor becomes a pointer on hover */
+}
