@@ -21,8 +21,28 @@
         <input type="checkbox" class="filter-btn" id="2022" data-console="PS5" checked>PS5
 
     </div>
-    <div class="tooltip"></div>
+    <div class="tooltip"
+        style="position: absolute; display: none; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 8px; font-size: 14px;">
+    </div>
+    <hr>
+    <footer>
+        <p>The console gaming industry is dominated by three major brands: Sony, Nintendo, and Microsoft.Sony’s
+            PlayStation line of gaming consoles ranks as one of the most successful console brands of all time – five of
+            its products ranking among the top ten highest selling consoles in history. The PlayStation 2 ranks at the
+            top of this list with over 157 million units sold, while the more recent PS4 ranks fourth, generating an
+            additional 113 million unit sales throughout its lifetime. In this visualization, we have the console sale
+            data from 2011 to 2021 and present the rise and fall of each generations's gaming console. Click on any of the bar chart to drill down.</p>
+        <div style="text-align: center;">
+
+            <p>Reference:<a
+                    href="https://www.statista.com/statistics/222403/unit-sales-of-sonys-gaming-hardware-by-category/">Statista.com</a>
+                ,<a href="https://www.sony.com/en/SonyInfo/IR/library/historical">Sony.com</a>
+
+            </p>
+        </div>
+    </footer>
     <script>
+        //https://www.statista.com/statistics/222403/unit-sales-of-sonys-gaming-hardware-by-category/
         let file = d3.csv(`https://raw.githubusercontent.com/TonyDeng1997/hdeng11.github.io/main/final_data.csv`)
         let mainData = []
         d3.csv("https://raw.githubusercontent.com/TonyDeng1997/hdeng11.github.io/main/final_data.csv").then(function (data) {

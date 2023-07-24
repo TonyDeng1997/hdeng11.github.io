@@ -1,9 +1,15 @@
    /* CSS to center the chart container */
 #chart {
 width: 800px;
-height: 600px;
+height: 700px;
 
 margin-left: 30%;
+}
+#line-chart {
+    width: 1000px;
+    height: 600px;
+    
+    margin-left: 30%;
 }
 .bar {
 

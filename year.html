@@ -20,6 +20,18 @@
   <div id="tooltip"
     style="position: absolute; display: none; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 8px; font-size: 14px;">
   </div>
+  <hr>
+  <footer>
+    <p></p>
+    <div style="text-align: center;">
+        <p id="footer-message"></p>
+        <p>Reference:<a
+                href="https://www.statista.com/statistics/222403/unit-sales-of-sonys-gaming-hardware-by-category/">Statista.com</a>
+            ,<a href="https://www.sony.com/en/SonyInfo/IR/library/historical">Sony.com</a>
+
+        </p>
+    </div>
+</footer>
 
   <script>
     // The data you provided
@@ -49,6 +61,19 @@
     d3.csv("https://raw.githubusercontent.com/TonyDeng1997/hdeng11.github.io/main/final_data.csv").then(function (data) {
       var currentConsole = getURLParameter("console")
       d3.select("#my-heading").text("Yearly Hardware Sales for " + currentConsole)
+      if(currentConsole=="PS2/PS3"){
+        d3.select("#footer-message").text("The PlayStation 2, launched in 2000, became a gaming phenomenon and remains one of the best-selling consoles in history. Its DVD playback functionality made it a popular choice for entertainment, further expanding its appeal beyond gaming. The PlayStation 3 was launched in November 2006. The PS3 also brought Blu-ray technology to mainstream consumers, making it a complete multimedia center. The PlayStation Network (PSN) introduced online gaming, digital downloads, and a social gaming experience. The data only captures sales from 2011, but we can see that PS2 and PS3 added together have sold more than 10 million consoles in 2011. ")
+      }
+      if(currentConsole=="PSP"){
+        d3.select("#footer-message").text("The PlayStation Portable (PSP), released by Sony in 2004, emerged as a groundbreaking handheld gaming device that promised console-like experiences on the go. With its impressive hardware capabilities, multimedia features, and a diverse library of games, the PSP quickly captured the hearts of gamers worldwide. However, despite its initial success, the PSP faced formidable challenges that eventually led to its decline. From the chart, we can see that despite they discontinued PSP on 2014. They were able to sell 3.3 millions in that year ")
+      }
+      if(currentConsole=="PS4"){
+        d3.select("#footer-message").text("The PlayStation 4 represented a significant shift in the gaming landscape, embracing social connectivity and streaming capabilities. With improved hardware and performance, the PS4 delivered smooth gameplay experiences and enhanced graphics. The integration of the PSN allowed players to connect and share experiences seamlessly. The console also introduced remote play, enabling gamers to stream and play their games on other devices like the PS Vita. The data from 2011 to 2021 captures the full life cycle of PS4")
+      }
+      if(currentConsole=="PS5"){
+        d3.select("#footer-message").text("The latest iteration, the PlayStation 5, launched in 2020, embodies the epitome of technological advancements. With lightning-fast load times thanks to the custom SSD, ray tracing capabilities, and 4K resolution support, the PS5 delivers unparalleled visual fidelity and a truly next-gen gaming experience. The DualSense controller introduces haptic feedback and adaptive triggers, immersing players in the game like never before. The PS5 continues to embrace online gaming, cloud streaming, and a vast library of exclusive titles. Sony sold a total of 3.9 million PlayStation 5 gaming consoles in the third quarter of the fiscal year 2021. Prior to this device, around 7.8 million PS5 units were sold in 2020. This gaming console is still in the early stage of its life cycle")
+      }
+     
       const parseDate = d3.timeParse("Q%q '%y");
       const yearlySales = d3.rollups(
         data,

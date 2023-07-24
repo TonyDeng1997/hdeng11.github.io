@@ -24,12 +24,24 @@
       <button onclick="filterData()">Apply Filter</button>
     </div>
   </div>
-  <div id="chart">
+  <div id="line-chart">
   </div>
 
   <div id="tooltip"
     style="position: absolute; display: none; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 8px; font-size: 14px;">
   </div>
+  <hr>
+  <footer>
+    <p>We have arrived at the deepest layer of the drill down story of the gaming consoles, where we can find the most detailed road map of each console. Sales of PlayStation consoles generally tend to peak in the company’s third fiscal quarter, which is the fourth calendar quarter, as people begin to prepare for the holiday season. Use the filter to see a larger range of dates and follow the annotation to see some of the most popular titles</p>
+    <div style="text-align: center;">
+
+        <p>Reference:<a
+                href="https://www.statista.com/statistics/222403/unit-sales-of-sonys-gaming-hardware-by-category/">Statista.com</a>
+            ,<a href="https://www.sony.com/en/SonyInfo/IR/library/historical">Sony.com</a>
+
+        </p>
+    </div>
+</footer>
 
   <script>
     // The data you provided
@@ -118,8 +130,32 @@
       // Now you can access the yearly sales data in the "yearlySalesData" array
 
       drawLineChart(filteredData)
+    }
+    function addAnnotaction(console, quarter, title,comment, data,xScale,yScale,svg) {
+      var result = data.filter(d => d.year == quarter && d.sales != 0)
+      if (result != undefined && result.length != 0 && currentConsole == console) {
+        const annotations = [
+          {
+            note: {
+              title: title,
+              label: comment,
+            },
+            x: xScale(result[0].year) + xScale.bandwidth() / 2,
+            y: yScale(result[0].sales),
+            dx: 0,
+            dy: 50,
+            connector: { end: "arrow" },
+            type: d3.annotationCalloutElbow,
+            color: "blue",
+          },
+        ];
 
+        // Draw the annotations
+        const makeAnnotations = d3.annotation()
+          .annotations(annotations);
 
+        svg.append("g").attr("class", "annotation-group").call(makeAnnotations);
+      }
 
     }
 
@@ -128,11 +164,11 @@
     const width = 1000;
     const height = 500;
     function drawLineChart(data) {
-      d3.select("#chart").selectAll("*").remove();
-      const svg = d3.select('#chart')
+      d3.select("#line-chart").selectAll("*").remove();
+      const svg = d3.select('#line-chart')
         .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
+        .attr('width', "1300")
+        .attr('height', "800")
         .append('g')
         .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
@@ -148,13 +184,7 @@
       const xAxis = d3.axisBottom(xScale);
       const yAxis = d3.axisLeft(yScale);
 
-      svg
-        .append("text")
-        .attr("x", 50)
-        .attr("y", height - 50)
-        .style("font-size", "20px")
-        .style("fill", "green")
-        .text("Click on dot to drill in");
+     
 
       svg.append('g')
         .attr('transform', `translate(0, ${height})`)
@@ -205,28 +235,12 @@
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text("Hardware Sales (In Millions)");
+      addAnnotaction("PS4","Q3 '13","The Last Of Us","Released June 2013",data,xScale,yScale,svg)
+      addAnnotaction("PS4","Q3 '20","The Last Of Us Part 2","Released June 2020",data,xScale,yScale,svg)
+      addAnnotaction("PS4","Q4 '18","Red Dead Redemption 2","Released October 2018",data,xScale,yScale,svg)
+      addAnnotaction("PS4","Q3 '18","Marvel's Spider-Man","Released September 2018",data,xScale,yScale,svg)
+      addAnnotaction("PS2/PS3","Q3 '13","Grand Theft Auto V","Released September 2013",data,xScale,yScale,svg)
 
-      const annotations = [
-        {
-          note: {
-            title: "Data Point",
-            label: "This is a data point.",
-          },
-          x: xScale(data[1].year) + xScale.bandwidth() / 2,
-          y: yScale(data[1].sales),
-          dx: 70,
-          dy: 40,
-          connector: { end: "arrow" },
-          type: d3.annotationCalloutElbow,
-          color: "blue",
-        },
-      ];
-
-      // Draw the annotations
-      const makeAnnotations = d3.annotation()
-        .annotations(annotations);
-
-      svg.append("g").attr("class", "annotation-group").call(makeAnnotations);
     }
 
     //drawLineChart()
